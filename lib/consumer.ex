@@ -43,7 +43,7 @@ defmodule Massdriver.Consumer do
       {:ok, _pid} ->
         Logger.info("MetadataEditor started for thread #{thread_id}")
 
-        # Build initial embed (author is the bot itself)
+        # build initial embed (author is the bot itself)
         embed = MetadataFormatter.build_embed(%Massdriver.Metadata{}) |> add_author()
 
         components = [
@@ -67,7 +67,7 @@ defmodule Massdriver.Consumer do
 
         case Message.create(thread_id, embeds: [embed], components: components) do
           {:ok, message} ->
-            # Store the message ID for future edits
+            # store the message id for future edits
             MetadataEditor.set_message_id(thread_id, message.id)
             Logger.info("Metadata editor sent to thread #{thread_id}")
 
