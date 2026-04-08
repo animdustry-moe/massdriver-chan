@@ -28,12 +28,13 @@ defmodule Massdriver do
     bot_options = %{
       name: :massdriver,
       consumer: Massdriver.Consumer,
-      intents: [:direct_messages, :guild_messages, :message_content],
+      intents: :all,
       wrapped_token: fn -> System.fetch_env!("BOT_TOKEN") end
     }
 
     children = [
-      {Nostrum.Bot, bot_options}
+      {Nostrum.Bot, bot_options},
+      {Registry, keys: :unique, name: Massdriver.ThreadRegistry}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
