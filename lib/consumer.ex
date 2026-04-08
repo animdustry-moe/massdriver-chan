@@ -22,6 +22,7 @@ defmodule Massdriver.Consumer do
   alias Massdriver.MetadataFormatter
 
   @select_menu_custom_id "select_metadata_field"
+  @publish_button_custom_id "publish_metadata"
 
   @field_options [
     %{label: "Title", value: "title", description: "Post / page title"},
@@ -43,10 +44,13 @@ defmodule Massdriver.Consumer do
       {:ok, _pid} ->
         Logger.info("MetadataEditor started for thread #{thread_id}")
 
-        # build initial embed (author is the bot itself)
-        embed = MetadataFormatter.build_embed(%Massdriver.Metadata{}) |> add_author()
+        embed =
+          %Massdriver.Metadata{}
+          |> MetadataFormatter.build_embed()
+          |> add_author()
 
         components = [
+          # select menu
           %Component{
             type: 1,
             components: [
@@ -62,12 +66,23 @@ defmodule Massdriver.Consumer do
                 max_values: 1
               }
             ]
+          },
+          %Component{
+            type: 1,
+            components: [
+              %Component{
+                type: 2,
+                # green as success
+                style: 3,
+                label: "Publish",
+                custom_id: @publish_button_custom_id
+              }
+            ]
           }
         ]
 
         case Message.create(thread_id, embeds: [embed], components: components) do
           {:ok, message} ->
-            # store the message id for future edits
             MetadataEditor.set_message_id(thread_id, message.id)
             Logger.info("Metadata editor sent to thread #{thread_id}")
 
@@ -77,6 +92,70 @@ defmodule Massdriver.Consumer do
 
       {:error, reason} ->
         Logger.error("Failed to start MetadataEditor for thread #{thread_id}: #{inspect(reason)}")
+    end
+  end
+
+  # publish
+  def handle_event(
+        {:INTERACTION_CREATE,
+         %Nostrum.Struct.Interaction{
+           type: 3,
+           data: %{custom_id: @publish_button_custom_id},
+           channel_id: thread_id,
+           user: %{id: user_id}
+         } = interaction, _ws_state}
+      ) do
+    case MetadataEditor.get_owner(thread_id) do
+      ^user_id ->
+        # get the metadata
+        metadata = MetadataEditor.get_metadata(thread_id)
+
+        IO.inspect(metadata, label: "publishing metadata for thread #{thread_id}")
+
+        case MetadataEditor.get_message_id(thread_id) do
+          nil ->
+            Logger.warning("No message_id stored for thread #{thread_id}")
+
+          message_id ->
+            published_embed =
+              metadata
+              |> MetadataFormatter.build_embed()
+              |> Map.put(:title, "Post Metadata (Published)")
+              |> Map.put(
+                :description,
+                "This metadata has been published and can no longer be edited."
+              )
+              # grey out
+              |> Map.put(:color, 0x808080)
+
+            # remove component
+            Nostrum.Api.Message.edit(thread_id, message_id,
+              embeds: [published_embed],
+              components: []
+            )
+        end
+
+        success_embed = %Nostrum.Struct.Embed{
+          title: "Publishing Successful",
+          description: "The metadata has been published.",
+          color: 0x00FF00,
+          timestamp: DateTime.utc_now() |> DateTime.truncate(:second)
+        }
+
+        Interaction.create_response(interaction, %{
+          type: 4,
+          data: %{embeds: [success_embed]}
+        })
+
+        # kill actor
+        GenServer.stop(MetadataEditor.via_tuple(thread_id), :normal)
+        Logger.info("MetadataEditor for thread #{thread_id} terminated")
+
+      _owner_id ->
+        Interaction.create_response(interaction, %{
+          type: 4,
+          data: %{content: "Only the thread creator can publish.", flags: 64}
+        })
     end
   end
 

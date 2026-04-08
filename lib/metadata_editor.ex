@@ -43,6 +43,10 @@ defmodule Massdriver.MetadataEditor do
     GenServer.cast(via_tuple(thread_id), {:set_message_id, message_id})
   end
 
+  def get_message_id(thread_id) do
+    GenServer.call(via_tuple(thread_id), :get_message_id)
+  end
+
   def set_awaiting(thread_id, user_id, field) do
     GenServer.cast(via_tuple(thread_id), {:set_awaiting, user_id, field})
   end
@@ -99,6 +103,11 @@ defmodule Massdriver.MetadataEditor do
 
   def handle_call(:get_owner, _from, state) do
     {:reply, state.owner_id, state}
+  end
+
+  @impl true
+  def handle_call(:get_message_id, _from, state) do
+    {:reply, state.message_id, state}
   end
 
   @impl true
