@@ -35,7 +35,8 @@ defmodule Massdriver.MixProject do
   defp deps do
     [
       # screw it we unstabling it
-      {:nostrum, github: "Kraigie/nostrum"}
+      {:nostrum, github: "Kraigie/nostrum"},
+      {:ezstd, "~> 1.1"}
     ]
   end
 end
