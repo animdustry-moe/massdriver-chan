@@ -13,6 +13,13 @@
 #  limitations under the License.
 
 defmodule Massdriver.MetadataEditor do
+  @moduledoc """
+  an actor that is tied individual thread:
+  each stores the thread information and is created once a new 
+  thread is made
+
+  it keeps track of the state
+  """
   use GenServer
   require Logger
 

@@ -36,7 +36,8 @@ defmodule Massdriver.MixProject do
     [
       # screw it we unstabling it
       {:nostrum, github: "Kraigie/nostrum"},
-      {:ezstd, "~> 1.1"}
+      {:ezstd, "~> 1.1"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 end

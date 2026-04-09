@@ -13,6 +13,10 @@
 #  limitations under the License.
 
 defmodule Massdriver.Consumer do
+  @moduledoc """
+  the event handler of the bot
+  """
+
   @behaviour Nostrum.Consumer
   require Logger
 
@@ -120,6 +124,7 @@ defmodule Massdriver.Consumer do
         # get the metadata
         metadata = MetadataEditor.get_metadata(thread_id)
 
+        # placeholder for publishing the data
         IO.inspect(metadata, label: "publishing metadata for thread #{thread_id}")
 
         case MetadataEditor.get_message_id(thread_id) do

@@ -13,6 +13,9 @@
 #  limitations under the License.
 
 defmodule Massdriver.Metadata do
+  @moduledoc """
+  the metadata struct for storing post content
+  """
   defstruct title: nil,
             date: nil,
             updated: nil,
