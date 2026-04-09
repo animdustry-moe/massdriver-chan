@@ -39,15 +39,25 @@ defmodule Massdriver.Consumer do
   ]
 
   # make per thread editor and menu
-  def handle_event({:THREAD_CREATE, %{id: thread_id, owner_id: owner_id}, _ws_state}) do
-    case MetadataEditor.start_link(thread_id, owner_id) do
+  def handle_event(
+        {:THREAD_CREATE, %{id: thread_id, owner_id: owner_id, guild_id: guild_id}, _ws_state}
+      ) do
+    {_, user} = Nostrum.Cache.MemberCache.get_with_user(guild_id, owner_id)
+    pfp_url = Nostrum.Struct.User.avatar_url(user)
+
+    case MetadataEditor.start_link(
+           thread_id,
+           owner_id,
+           pfp_url,
+           user.global_name
+         ) do
       {:ok, _pid} ->
         Logger.info("MetadataEditor started for thread #{thread_id}")
 
         embed =
           %Massdriver.Metadata{}
           |> MetadataFormatter.build_embed()
-          |> add_author()
+          |> add_author(user.global_name, pfp_url)
 
         components = [
           # select menu
@@ -206,21 +216,28 @@ defmodule Massdriver.Consumer do
            content: content
          }, _ws_state}
       ) do
-    case MetadataEditor.get_awaiting(thread_id) do
-      {^user_id, field} ->
-        process_field_input(thread_id, field, content)
-        MetadataEditor.clear_awaiting(thread_id)
+    # ensure that not every single message matches
+    case Registry.lookup(Massdriver.ThreadRegistry, thread_id) do
+      [{_pid, _}] ->
+        # Process exists – safe to call
+        case MetadataEditor.get_awaiting(thread_id) do
+          {^user_id, field} ->
+            process_field_input(thread_id, field, content)
+            MetadataEditor.clear_awaiting(thread_id)
 
-      _ ->
+          _ ->
+            :ignore
+        end
+
+      [] ->
+        # no editor for this channel
         :ignore
     end
   end
 
-  def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
-    case msg.content do
-      "!ping" -> Message.create(msg.channel_id, "pong")
-      _ -> :ignore
-    end
+  # textural commands
+  def handle_event({:MESSAGE_CREATE, %{content: "!ping"} = msg, _ws_state}) do
+    Message.create(msg.channel_id, "pong")
   end
 
   def handle_event({event_name, _, _}) do
@@ -249,26 +266,15 @@ defmodule Massdriver.Consumer do
   defp parse_field_value("updated", val), do: val
   defp parse_field_value("description", val), do: val
   defp parse_field_value("link", val), do: val
-  defp parse_field_value("cover", val), do: val
-
-  defp parse_field_value("tags", val),
-    do: String.split(val, ",", trim: true) |> Enum.map(&String.trim/1)
-
-  defp parse_field_value("categories", val),
-    do: String.split(val, ",", trim: true) |> Enum.map(&String.trim/1)
-
-  # we like options
   defp parse_field_value("sticky", val), do: val in ["true", "1", "yes"]
   defp parse_field_value("catalog", val), do: val in ["true", "1", "yes"]
   defp parse_field_value("subtitle", val), do: val in ["true", "1", "yes"]
   defp parse_field_value(_, val), do: val
 
-  defp add_author(embed) do
-    bot_user = Nostrum.Cache.Me.get()
-
+  defp add_author(embed, author_name, author_icon_url) do
     %{
       embed
-      | author: %{name: bot_user.username, icon_url: Nostrum.Struct.User.avatar_url(bot_user)}
+      | author: %{name: author_name, icon_url: author_icon_url}
     }
   end
 end

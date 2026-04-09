@@ -27,8 +27,10 @@ defmodule Massdriver.MetadataEditor do
     {:via, Registry, {Massdriver.ThreadRegistry, thread_id}}
   end
 
-  def start_link(thread_id, owner_id) do
-    GenServer.start_link(__MODULE__, {thread_id, owner_id}, name: via_tuple(thread_id))
+  def start_link(thread_id, owner_id, avatar_url, username) do
+    GenServer.start_link(__MODULE__, {thread_id, owner_id, avatar_url, username},
+      name: via_tuple(thread_id)
+    )
   end
 
   def get_metadata(thread_id) do
@@ -65,12 +67,14 @@ defmodule Massdriver.MetadataEditor do
 
   # callbacks
   @impl true
-  def init({thread_id, owner_id}) do
+  def init({thread_id, owner_id, avatar_url, username}) do
     Logger.info("Starting MetadataEditor for thread #{thread_id}")
 
     state = %{
       thread_id: thread_id,
       owner_id: owner_id,
+      avatar_url: avatar_url,
+      username: username,
       message_id: nil,
       metadata: %Metadata{},
       awaiting: nil
@@ -91,7 +95,7 @@ defmodule Massdriver.MetadataEditor do
 
     # refresh embed if id exists
     if state.message_id do
-      refresh_embed(state.thread_id, state.message_id, updated)
+      refresh_embed(state.thread_id, state.message_id, updated, state.username, state.avatar_url)
     end
 
     {:reply, :ok, new_state}
@@ -124,8 +128,13 @@ defmodule Massdriver.MetadataEditor do
   end
 
   # render it again
-  defp refresh_embed(thread_id, message_id, metadata) do
-    embed = MetadataFormatter.build_embed(metadata)
+  defp refresh_embed(thread_id, message_id, metadata, username, avatar_url) do
+    embed =
+      metadata
+      |> MetadataFormatter.build_embed()
+      |> Map.put(:author, %{name: username, icon_url: avatar_url})
+
+    Logger.debug("avatar url #{avatar_url}")
 
     case Api.Message.edit(thread_id, message_id, embeds: [embed]) do
       {:ok, _} ->

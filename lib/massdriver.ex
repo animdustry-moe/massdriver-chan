@@ -29,6 +29,7 @@ defmodule Massdriver do
       name: :massdriver,
       consumer: Massdriver.Consumer,
       intents: :all,
+      request_guild_members: true,
       wrapped_token: fn -> System.fetch_env!("BOT_TOKEN") end
     }
 
