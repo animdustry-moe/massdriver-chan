@@ -274,7 +274,16 @@ defmodule Massdriver.Consumer do
   defp parse_field_value("sticky", val), do: val in ["true", "1", "yes"]
   defp parse_field_value("catalog", val), do: val in ["true", "1", "yes"]
   defp parse_field_value("subtitle", val), do: val in ["true", "1", "yes"]
+  defp parse_field_value("tags", val), do: parse_list_field(val)
+  defp parse_field_value("categories", val), do: parse_list_field(val)
   defp parse_field_value(_, val), do: val
+
+  defp parse_list_field(str) do
+    str
+    |> String.split(",")
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+  end
 
   defp add_author(embed, author_name, author_icon_url) do
     %{

@@ -22,7 +22,8 @@ defmodule Massdriver.MetadataFormatter do
   def format_value(val), do: "`#{val}`"
 
   def format_list([]), do: "`(none)`"
-  def format_list(list), do: "`#{Enum.join(list, ", ")}`"
+  def format_list(list) when is_list(list), do: "`#{Enum.join(list, ", ")}`"
+  def format_list(_), do: "`(invalid format)`"
 
   def format_bool(true), do: "`true`"
   def format_bool(false), do: "`false`"
