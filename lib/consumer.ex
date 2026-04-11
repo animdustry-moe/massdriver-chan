@@ -209,7 +209,6 @@ defmodule Massdriver.Consumer do
 
   # ignore other types
   def handle_event({:INTERACTION_CREATE, %Nostrum.Struct.Interaction{type: 3} = interaction, _ws_state}) do
-      Logger.warning("fskldfjsdklf")
       Interaction.create_response(interaction, %{
         type: 6,
       })
