@@ -44,13 +44,25 @@ defmodule Massdriver.MetadataFormatter do
       %{name: "Catalog", value: format_bool(metadata.catalog), inline: true},
       %{name: "Subtitle", value: format_bool(metadata.subtitle), inline: true}
     ]
+    cover = get_cover(metadata.cover)
 
     %Embed{
       title: "Post Metadata",
       description: "Current metadata for this thread.",
       color: 0x00FF00,
       fields: fields,
-      timestamp: DateTime.utc_now() |> DateTime.truncate(:second)
+      timestamp: DateTime.utc_now() |> DateTime.truncate(:second),
+      image: cover
     }
+  end
+
+  defp get_cover(url) do
+    if url != nil do
+      alias Nostrum.Struct.Embed.Image
+      # Note: the entire embed will fail to update if it is not a well formed URL.
+      %Image{
+        url: url
+      }
+    end
   end
 end
