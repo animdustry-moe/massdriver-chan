@@ -1,6 +1,6 @@
 # Massdriver
 
-**TODO: Add description**
+Discord bot to manage posts for Astro the static blog framework.
 
 ## Installation
 
