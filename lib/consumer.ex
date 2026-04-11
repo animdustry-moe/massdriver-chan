@@ -76,7 +76,7 @@ defmodule Massdriver.Consumer do
                     %{label: opt.label, value: opt.value, description: opt.description}
                   end),
                 placeholder: "Choose a field to edit...",
-                min_values: 1,
+                min_values: 0,
                 max_values: 1
               }
             ]
@@ -208,7 +208,11 @@ defmodule Massdriver.Consumer do
   end
 
   # ignore other types
-  def handle_event({:INTERACTION_CREATE, %Nostrum.Struct.Interaction{type: 3}, _ws_state}) do
+  def handle_event({:INTERACTION_CREATE, %Nostrum.Struct.Interaction{type: 3} = interaction, _ws_state}) do
+      Logger.warning("fskldfjsdklf")
+      Interaction.create_response(interaction, %{
+        type: 6,
+      })
     :ignore
   end
 
