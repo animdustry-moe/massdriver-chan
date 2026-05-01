@@ -36,6 +36,13 @@
       set -o allexport
       source .env
       set +o allexport
+
+      alias doc="cat ${docs} | fzf | awk '{print $2}' | xargs xdg-open"
+    '';
+
+    docs = pkgs.writeText "docs.txt" ''
+      https://docs.discord.com/developers/bots/overview
+      https://hexdocs.pm/nostrum/intro.html
     '';
   in {
     devShells.default = pkgs.mkShellNoCC {

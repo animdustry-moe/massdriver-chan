@@ -207,7 +207,7 @@ defmodule Massdriver.Consumer do
     end
   end
 
-  # ignore other types
+  # suppress "Interaction Failed"
   def handle_event({:INTERACTION_CREATE, %Nostrum.Struct.Interaction{type: 3} = interaction, _ws_state}) do
       Interaction.create_response(interaction, %{
         type: 6,
@@ -246,6 +246,24 @@ defmodule Massdriver.Consumer do
   # textural commands
   def handle_event({:MESSAGE_CREATE, %{content: "!ping"} = msg, _ws_state}) do
     Message.create(msg.channel_id, "pong")
+  end
+
+  def handle_event({:READY, _data, _ws}) do
+    Massdriver.Commands.register_commands()
+  end
+
+  # application commands
+  def handle_event(
+        {:INTERACTION_CREATE,
+         %Nostrum.Struct.Interaction{
+           type: 2,
+           data: %{name: cmd_name},
+         } = interaction, _ws_state}
+      ) do
+    case Map.get(Massdriver.Commands.commands(), cmd_name) do
+      nil     -> :noop
+      cmd -> cmd.execute(interaction)
+    end
   end
 
   def handle_event({event_name, _, _}) do

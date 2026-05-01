@@ -13,7 +13,7 @@ defmodule Massdriver.Commit do
     ])
 
     if String.contains?(changes, "priv/database/migrations/") do
-      {:halt, "#{label} Migration files must not be edited or deleted after creation"}
+      {:halt, "#{label} Migration files must not be edited or deleted after creation, check your Git status!"}
     end
   end
 
