@@ -35,7 +35,8 @@ defmodule Massdriver do
 
     children = [
       {Nostrum.Bot, bot_options},
-      {Registry, keys: :unique, name: Massdriver.ThreadRegistry}
+      {Registry, keys: :unique, name: Massdriver.ThreadRegistry},
+      Massdriver.Database
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

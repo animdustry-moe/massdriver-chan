@@ -12,19 +12,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import Config
-
-config :logger,
-  level: :debug
-
-# handle_otp_reports: true,
-# handle_sasl_reports: true
-
-config :logger, :console, level: :debug
-# format: "$time $metadata[$level] $message\n",
-# metadata: [:request_id, :user_id]
-
-config :massdriver, Massdriver.Database,
-  database: "data/database.db"
-
-config :massdriver, ecto_repos: [Massdriver.Database]
+defmodule Massdriver.Database do
+  use Ecto.Repo,
+  otp_app: :database,
+  adapter: Ecto.Adapters.SQLite3
+end
