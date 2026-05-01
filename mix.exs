@@ -40,7 +40,8 @@ defmodule Massdriver.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:egit, "~> 0.1"},
       {:ecto_sql, "~> 3.13"},
-      {:ecto_sqlite3, "~> 0.22"}
+      {:ecto_sqlite3, "~> 0.22"},
+      {:committee, "~> 1.0.0", only: :dev, runtime: false}
     ]
   end
 end
