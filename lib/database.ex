@@ -14,6 +14,6 @@
 
 defmodule Massdriver.Database do
   use Ecto.Repo,
-  otp_app: :database,
+  otp_app: :massdriver,
   adapter: Ecto.Adapters.SQLite3
 end

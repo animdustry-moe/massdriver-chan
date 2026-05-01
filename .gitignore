@@ -23,5 +23,3 @@ erl_crash.dump
 massdriver-*.tar
 
 .env
-# Data including website repositories and database file.
-/data/
