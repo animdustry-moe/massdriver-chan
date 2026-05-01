@@ -1,5 +1,7 @@
 # Data including website repositories and database file.
 
 database.db
+database.db-shm
+database.db-wal
 
 repos
