@@ -1,19 +1,19 @@
-defmodule YourApp.Commit do
+defmodule Massdriver.Commit do
   use Committee
   # import Committee.Helpers, only: [staged_files: 0, staged_files: 1]
 
   def pre_commit do
-    IO.puts("[.committee.exs] Verifying integrity of database migration files...")
+    label = :"[.committee.exs]"
+    IO.puts("#{label} Verifying integrity of database migration files...")
     {changes, _} = System.cmd("git", [
       "diff",
       "--cached",
       "--diff-filter=ac",         # Excluding Added and Copied.
       "--name-only"
     ])
-    IO.puts(changes)
 
-    if String.contains?(changes, "priv/repo/migrations/") do
-      {:halt, "[.committee.exs] Migration files must not be edited or deleted after creation"}
+    if String.contains?(changes, "priv/database/migrations/") do
+      {:halt, "#{label} Migration files must not be edited or deleted after creation"}
     end
   end
 
